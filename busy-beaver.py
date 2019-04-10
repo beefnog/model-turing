@@ -9,7 +9,7 @@
 # let's start with a Busy Beaver...
 # https://en.wikipedia.org/wiki/Busy_Beaver_game
 
-tape = ['V','A','G','I','N','A',' ','B','O','O','B']
+tape = ['B','E','N','T',' ','W','O','O','K','I','E']
 pos = 0
 state = 'A'
 VALID_STATES = ['A','B']
@@ -43,13 +43,11 @@ def tape_add_left():
 	tape.insert(0,'0')
 	# because lists are zero indexed, we have to move our position counter
 	# to account for the new list length
-	pos += 1
+	if pos != 0:
+		pos += 1
 
 def tape_add_right():
 	tape.append('0')
-
-def dump_tape():
-	print(tape)
 
 def head_read():
 	return tape[pos]
@@ -62,21 +60,21 @@ def main():
 
 	print("Cool.\n")
 	
-	# quick debugging
-	for i in range(len(tape)):
-		print(head_read())
-		tape_move_right()
-
-
-	# aaand done.
-	dump_tape()
-
 	# let's try some tape additions
 	tape_add_left()
 	tape_add_left()
 	tape_add_right()
 	tape_add_right()
-	dump_tape()
+	
+	# quick debugging
+	for i in range(len(tape)):
+		print(head_read())
+		tape_move_right()
+
+	# and compare
+	print(tape)
+
+
 
 if __name__ == "__main__":
 	main()
