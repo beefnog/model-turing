@@ -10,7 +10,7 @@
 # https://en.wikipedia.org/wiki/Busy_Beaver_game
 
 # tape = ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0']
-tape = []
+tape = ['0']
 
 pos = 0
 state = 'A'
@@ -80,15 +80,15 @@ def head_execute():
 	print(todo)
 	
 	# 2. write symbol
-	if todo[0] is '1':
+	if todo[0] == '1':
 		head_write('1')
 	else:
 		head_write('0')
 	
 	# 3. move head
-	if todo[1] is 'L':
+	if todo[1] == 'L':
 		tape_step_left()
-	if todo[1] is 'R':
+	if todo[1] == 'R':
 		tape_step_right()
 		
 	# 4. declare state
