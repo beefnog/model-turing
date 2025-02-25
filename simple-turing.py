@@ -1,116 +1,131 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
+# Idea: implement a Busy Beaver Turing machine for fun
+#
 # components:
 # read/write head
-# tape of arbitrary length, not a ring
+# tape of arbitrary length, implemented as a dict in this case
 # state register
 # instruction table
 
-# let's start with a Busy Beaver...
-# https://en.wikipedia.org/wiki/Busy_Beaver_game
+# ref: https://en.wikipedia.org/wiki/Busy_Beaver_game
 
-# tape = ['0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0']
-tape = ['0']
+class TuringMachine:
+    def __init__(self):
+        self.pos = 0
+        self.state = 'A'
+        self.steps = 0
 
-pos = 0
-state = 'A'
-steps = 0
+        self.tape = dict() # {<pos_num>: 'contents'}
+        self.head_write('0')
+        print("Machine created.")
+    
+    def head_read(self):
+        return self.tape[self.pos]
+    
+    def head_write(self, value):
+        self.tape[self.pos] = value
+    
+    def head_left(self):
+        self.pos -= 1
 
-WORKING_STATES = ['A','B']
-HALT_STATE = 'H'
-VALID_SYMBOLS = ['0','1']
+        # Is this a valid position? If not, extend the tape.
+        try:
+            self.tape[self.pos]
+        except KeyError:
+            self.tape[self.pos] = 0
+        
+        return
+    
+    def head_right(self):
+        self.pos += 1
 
-DECK = {
-	'A0': '1RB',
-	'A1': '1LB',
-	'B0': '1LA',
-	'B1': '1RH',
-	}
-	
-# stepping the tape left / right
-def tape_step_left():
-	global tape, pos, steps
-	if pos == 0:
-		tape_add_left()
-	pos -= 1
-	# steps += 1
+        # Is this a valid posltion? If not, extend the tape.
+        try:
+            self.tape[self.pos]
+        except KeyError:
+            self.tape[self.pos] = 0
+        
+        return
+    
 
+    def execute(self, deck):
+        self.contents = self.head_read()
+        combined = self.state + str(self.contents) # e.g. A0
+        card_value = deck[combined]
 
-def tape_step_right():
-	global tape, pos, steps
-	if pos == len(tape):
-		tape_add_right(tape)
-	pos += 1
-	# steps += 1
+        # 'A0' -> '1RB'
+        #
+        # If A0, then...
+        # write '1'
+        # move head right
+        # set state to 'B'
 
+        print(combined, card_value)
 
-# if the tape is not long enough, we need to add more...
-# note: busy beaver game cells are always zero when untouched.
-def tape_add_left():
-	global pos
-	tape.insert(0,'0')
-	# because lists are zero indexed, we have to move our position counter
-	# to account for the new list length
-	if pos != 0:
-		pos += 1
+        self.head_write(card_value[0])
 
+        if 'R' == card_value[1]:
+            print("moving right")
+            self.head_right()
+        if 'L' == card_value[1]:
+            print("moving left")
+            self.head_left()
+        
+        self.state = card_value[2]
 
-def tape_add_right():
-	tape.append('0')
-
-
-def head_read():
-	global tape, pos
-	return tape[pos]
-
-
-def head_write(symbol):
-	global tape, pos
-	tape[pos] = symbol
+        self.steps += 1
+        return
 
 
-def head_execute():
-	
-	global state
-	# jobs
-	
-	# 1. read card for current state and symbol
-	symbol = head_read()
-	todo = DECK[state + symbol]
-	print(todo)
-	
-	# 2. write symbol
-	if todo[0] == '1':
-		head_write('1')
-	else:
-		head_write('0')
-	
-	# 3. move head
-	if todo[1] == 'L':
-		tape_step_left()
-	if todo[1] == 'R':
-		tape_step_right()
-		
-	# 4. declare state
-	state = todo[2]
+
+
+def get_deck():
+    predefined_deck = {
+        'A0': '1RB',
+        'A1': '1LB',
+        'B0': '1LA',
+        'B1': '0LC',
+        'C0': '1RH',
+        'C1': '1LD',
+        'D0': '1RD',
+        'D1': '0RA'
+    }
+    # predefined_deck = {
+    #     'A0': '1RB',
+    #     'A1': '1LB',
+    #     'B0': '1LA',
+    #     'B1': '1RH'
+    # }
+    return predefined_deck
 
 
 def main():
-	# constants
+    
+    deck = get_deck() # for now we have a hard-code deck returned from the function
+    if not type(deck) is dict:
+        print("get_deck() failed to parse the provided deck. Halting...")
+        print(type(deck))
+        return
 
-	global tape, pos, state, steps
-
-	# initialize
-	tape.append('0')
-	
-	while state != HALT_STATE:
-		print("Step: ", steps)
-		# print(tape)
-		steps += 1
-		# here = head_read()
-		head_execute()
+    tm = TuringMachine()
+    print(tm)
+    print("Step:", tm.steps, "State:", tm.state, "Pos:", tm.pos)
+    while tm.state != 'H':
+        tm.execute(deck)
+        print("Step:", tm.steps, "State:", tm.state, "Pos:", tm.pos)
+        for k in sorted(tm.tape):
+            print(k, tm.tape[k])
+        # input("\npush for go")
+    
+    print("\n\n\nHALT state reached.")
+    print("Final tape:")
+    for k in sorted(tm.tape):
+        print(k, tm.tape[k])
+    print("")
 
 
 if __name__ == "__main__":
-	main()
+    main()
 
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
